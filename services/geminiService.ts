@@ -2,41 +2,30 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const transcribeWithSynonyms = async (text: string): Promise<string> => {
-  if (!process.env.API_KEY) {
-    console.error("API_KEY não encontrada no ambiente.");
-    throw new Error("Configuração da API pendente.");
-  }
-
-  // Inicialização obrigatória usando named parameter apiKey
+  // Inicialização direta conforme diretrizes, assumindo que process.env.API_KEY está disponível
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
-    // Para solicitações simples de texto, passamos o prompt diretamente em contents
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: text,
+      contents: [{ parts: [{ text: text }] }],
       config: {
-        systemInstruction: "Aja como um redator profissional. Sua tarefa é reescrever o texto do usuário utilizando sinônimos mais sofisticados e variados, mantendo o sentido original, a pontuação e os parágrafos. Retorne APENAS o texto aprimorado, sem introduções ou explicações.",
-        temperature: 0.7,
+        systemInstruction: "Você é um redator sênior. Sua tarefa é reescrever o texto do usuário utilizando sinônimos mais ricos e vocabulário elevado, mantendo rigorosamente o sentido original, o tom, a pontuação e a estrutura de parágrafos. Retorne APENAS o texto aprimorado, sem qualquer comentário adicional ou introdução.",
+        temperature: 0.8,
         topP: 0.95,
       }
     });
 
-    // Acessando a propriedade .text (getter) diretamente conforme diretrizes
+    // Acessando a propriedade .text (getter) diretamente
     const resultText = response.text;
     
     if (!resultText) {
-      throw new Error("A IA não gerou conteúdo.");
+      throw new Error("Não foi possível gerar a transcrição.");
     }
 
     return resultText.trim();
   } catch (error: any) {
-    console.error("Erro na transcrição:", error);
-    
-    if (error.status === 403 || error.status === 401) {
-      throw new Error("Erro de autorização. Verifique sua chave de API.");
-    }
-    
-    throw new Error("Falha ao processar o texto. Verifique sua conexão ou tente novamente mais tarde.");
+    console.error("Erro na API Gemini:", error);
+    throw new Error("Falha ao processar a transcrição. Por favor, tente novamente em alguns instantes.");
   }
 };
