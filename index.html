@@ -25,6 +25,8 @@
       body {
         font-family: 'Inter', sans-serif;
         overflow-x: hidden;
+        margin: 0;
+        padding: 0;
       }
       .glass {
         background: rgba(255, 255, 255, 0.4);
@@ -66,6 +68,7 @@
 </head>
   <body class="blue-gradient min-h-screen">
     <div id="root"></div>
-    <!-- O sistema de build importará o index.tsx automaticamente -->
+    <!-- Ponto de entrada crucial para o funcionamento do React -->
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
