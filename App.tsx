@@ -1,6 +1,8 @@
 
 import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
+import FloatingShapes from './components/FloatingShapes';
 import { transcribeWithSynonyms } from './services/geminiService';
 import { AppStatus } from './types';
 
@@ -43,125 +45,177 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pb-20">
-      <Header />
+    <div className="relative min-h-screen overflow-hidden selection:bg-blue-200">
+      <FloatingShapes />
+      
+      <div className="max-w-7xl mx-auto px-6 pb-24">
+        <Header />
 
-      <main className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
-        {/* Input Section */}
-        <div className="flex flex-col space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-sky-800 flex items-center gap-2">
-              <i className="fas fa-pen-nib text-sky-500"></i> Seu Texto
-            </h2>
-            <button 
-              onClick={handleClear}
-              className="text-sm text-sky-600 hover:text-sky-800 transition-colors"
-            >
-              Limpar Tudo
-            </button>
-          </div>
-          <div className="relative group">
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Cole ou digite seu texto aqui..."
-              className="w-full h-80 p-6 rounded-3xl glass shadow-xl focus:ring-4 focus:ring-sky-200 focus:outline-none transition-all resize-none text-sky-900 leading-relaxed placeholder-sky-400"
-            />
-            {inputText && (
-              <div className="absolute bottom-4 right-4 text-xs text-sky-400 bg-white/50 px-2 py-1 rounded-md">
-                {inputText.length} caracteres
+        <motion.main 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start"
+        >
+          {/* Editor Input */}
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-between items-end px-2">
+              <div>
+                <h2 className="text-2xl font-bold text-sky-900">Entrada</h2>
+                <p className="text-sky-600 text-sm">Insira o texto que deseja aprimorar</p>
               </div>
-            )}
-          </div>
-          <button
-            onClick={handleTranscribe}
-            disabled={status === AppStatus.LOADING || !inputText.trim()}
-            className={`w-full py-4 rounded-2xl font-bold text-lg transition-all shadow-lg transform active:scale-95 flex items-center justify-center gap-3 ${
-              status === AppStatus.LOADING 
-                ? 'bg-sky-300 cursor-not-allowed' 
-                : 'bg-blue-500 hover:bg-blue-600 text-white hover:shadow-blue-200/50'
-            }`}
-          >
-            {status === AppStatus.LOADING ? (
-              <>
-                <i className="fas fa-circle-notch fa-spin"></i> Processando...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-magic"></i> Enriquecer com Sinônimos
-              </>
-            )}
-          </button>
-        </div>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleClear}
+                className="bg-white/50 hover:bg-white px-4 py-2 rounded-xl text-sky-700 text-sm font-medium transition-colors border border-sky-100"
+              >
+                Resetar
+              </motion.button>
+            </div>
 
-        {/* Output Section */}
-        <div className="flex flex-col space-y-4">
-          <div className="flex justify-between items-center h-8">
-            <h2 className="text-xl font-semibold text-sky-800 flex items-center gap-2">
-              <i className="fas fa-sparkles text-blue-500"></i> Texto Transcrito
-            </h2>
-            {status === AppStatus.SUCCESS && (
-              <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 animate-pulse">
-                Concluído!
-              </span>
-            )}
-          </div>
-          
-          <div className="relative group">
-            <textarea
-              value={outputText}
-              onChange={(e) => setOutputText(e.target.value)}
-              placeholder="O resultado aparecerá aqui..."
-              readOnly={status === AppStatus.LOADING}
-              className={`w-full h-80 p-6 rounded-3xl glass shadow-xl focus:ring-4 focus:ring-sky-200 focus:outline-none transition-all resize-none text-sky-900 leading-relaxed placeholder-sky-400 ${
-                status === AppStatus.LOADING ? 'opacity-50' : 'opacity-100'
+            <motion.div 
+              whileFocus={{ scale: 1.01 }}
+              className="relative rounded-[2rem] overflow-hidden glass shadow-2xl transition-all border-white/60"
+            >
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Escreva algo brilhante aqui..."
+                className="w-full h-[450px] p-8 bg-transparent focus:outline-none text-sky-950 text-lg leading-relaxed placeholder-sky-300 resize-none"
+              />
+              <div className="absolute bottom-6 left-8 flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+                <span className="text-xs font-bold text-sky-400 uppercase tracking-widest">
+                  {inputText.split(/\s+/).filter(Boolean).length} palavras
+                </span>
+              </div>
+            </motion.div>
+
+            <motion.button
+              whileHover={{ scale: 1.02, boxShadow: "0 20px 25px -5px rgb(59 130 246 / 0.2)" }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleTranscribe}
+              disabled={status === AppStatus.LOADING || !inputText.trim()}
+              className={`relative group w-full py-5 rounded-2xl font-black text-xl overflow-hidden transition-all ${
+                status === AppStatus.LOADING 
+                  ? 'bg-sky-200 cursor-not-allowed text-sky-400' 
+                  : 'bg-blue-600 text-white'
               }`}
-            />
-            
-            <div className="absolute top-4 right-4 flex gap-2">
-              {status === AppStatus.SUCCESS && (
-                <button
-                  onClick={handleCopy}
-                  className={`p-3 rounded-xl transition-all shadow-md flex items-center gap-2 ${
-                    copySuccess 
-                      ? 'bg-emerald-500 text-white' 
-                      : 'bg-white text-sky-600 hover:bg-sky-50'
-                  }`}
-                  title="Copiar Texto"
-                >
-                  <i className={`fas ${copySuccess ? 'fa-check' : 'fa-copy'}`}></i>
-                  <span className="text-xs font-bold">{copySuccess ? 'Copiado!' : 'Copiar'}</span>
-                </button>
+            >
+              <div className="relative z-10 flex items-center justify-center gap-3">
+                {status === AppStatus.LOADING ? (
+                  <>
+                    <i className="fas fa-compact-disc fa-spin"></i>
+                    IA Analisando...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-wand-magic-sparkles"></i>
+                    Transcrever Agora
+                  </>
+                )}
+              </div>
+              {status !== AppStatus.LOADING && (
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               )}
-            </div>
+            </motion.button>
           </div>
 
-          {status === AppStatus.ERROR && (
-            <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm flex items-center gap-3">
-              <i className="fas fa-exclamation-circle text-lg"></i>
-              {errorMessage}
+          {/* Result Output */}
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-between items-end px-2">
+              <div>
+                <h2 className="text-2xl font-bold text-sky-900">Resultado</h2>
+                <p className="text-sky-600 text-sm">Seu texto com vocabulário enriquecido</p>
+              </div>
+              <AnimatePresence>
+                {status === AppStatus.SUCCESS && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleCopy}
+                    className={`px-5 py-2 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center gap-2 ${
+                      copySuccess ? 'bg-emerald-500 text-white' : 'bg-white text-blue-600 border border-blue-100'
+                    }`}
+                  >
+                    <i className={`fas ${copySuccess ? 'fa-check' : 'fa-copy'}`}></i>
+                    {copySuccess ? 'Copiado' : 'Copiar Texto'}
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
-          )}
 
-          <div className="p-6 rounded-3xl bg-blue-100/30 border border-blue-200/50">
-            <h3 className="text-sky-900 font-bold mb-2 flex items-center gap-2">
-              <i className="fas fa-lightbulb text-yellow-500"></i> Dica de Uso
-            </h3>
-            <p className="text-sky-700 text-sm leading-relaxed">
-              Você pode editar o texto gerado diretamente no campo acima caso queira fazer ajustes manuais. O Transcrever Online utiliza tecnologia avançada para sugerir as melhores variações linguísticas.
-            </p>
+            <motion.div 
+              className={`relative rounded-[2rem] overflow-hidden glass shadow-2xl transition-all border-white/60 ${
+                status === AppStatus.LOADING ? 'ring-4 ring-blue-400/20' : ''
+              }`}
+            >
+              {status === AppStatus.LOADING && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-white/20 backdrop-blur-[2px]">
+                   <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+                   <p className="font-bold text-blue-600 animate-pulse tracking-widest text-xs uppercase">Processando Linguagem...</p>
+                </div>
+              )}
+              
+              <textarea
+                value={outputText}
+                onChange={(e) => setOutputText(e.target.value)}
+                placeholder="A mágica acontecerá aqui..."
+                className="w-full h-[450px] p-8 bg-transparent focus:outline-none text-blue-900 text-lg leading-relaxed placeholder-blue-300 resize-none"
+              />
+
+              <div className="absolute bottom-6 right-8">
+                <div className="flex gap-2">
+                  <div className="h-1.5 w-6 rounded-full bg-blue-100" />
+                  <div className="h-1.5 w-3 rounded-full bg-blue-200" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-blue-300" />
+                </div>
+              </div>
+            </motion.div>
+
+            <AnimatePresence>
+              {status === AppStatus.ERROR && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="bg-red-50 p-4 rounded-2xl border border-red-100 flex items-center gap-3 text-red-600 font-medium"
+                >
+                  <i className="fas fa-circle-exclamation text-xl"></i>
+                  {errorMessage}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="p-8 rounded-[2rem] glass border-white/60">
+              <div className="flex items-center gap-3 mb-3 text-sky-900">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <i className="fas fa-lightbulb text-blue-600"></i>
+                </div>
+                <h3 className="font-bold">Interação Dinâmica</h3>
+              </div>
+              <p className="text-sky-800/70 text-sm leading-relaxed">
+                Este layout foi projetado para ser intuitivo. Sinta-se à vontade para <strong>editar manualmente</strong> o resultado da IA para dar seu toque final antes de copiar.
+              </p>
+            </div>
           </div>
-        </div>
-      </main>
+        </motion.main>
 
-      <footer className="mt-16 pt-8 border-t border-sky-200 text-center text-sky-500 text-sm">
-        <p>&copy; {new Date().getFullYear()} Transcrever Online. Todos os direitos reservados.</p>
-        <div className="flex justify-center gap-6 mt-4">
-          <a href="#" className="hover:text-sky-800 transition-colors">Privacidade</a>
-          <a href="#" className="hover:text-sky-800 transition-colors">Termos</a>
-          <a href="#" className="hover:text-sky-800 transition-colors">Suporte</a>
-        </div>
-      </footer>
+        <footer className="mt-24 pt-12 border-t border-sky-200/50 flex flex-col md:flex-row justify-between items-center gap-6 text-sky-500 text-sm font-medium">
+          <p>© {new Date().getFullYear()} Transcrever Online. Criado para mentes criativas.</p>
+          <div className="flex items-center gap-8">
+            <a href="#" className="hover:text-blue-600 transition-colors">Instagram</a>
+            <a href="#" className="hover:text-blue-600 transition-colors">LinkedIn</a>
+            <a href="#" className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+              Feedback
+            </a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 };
