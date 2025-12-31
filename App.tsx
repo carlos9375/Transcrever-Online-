@@ -24,7 +24,7 @@ const App: React.FC = () => {
       setOutputText(result);
       setStatus(AppStatus.SUCCESS);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Ocorreu um erro inesperado.');
+      setErrorMessage(err.message || 'Ocorreu um erro ao conectar com o serviço.');
       setStatus(AppStatus.ERROR);
     }
   };
@@ -62,7 +62,7 @@ const App: React.FC = () => {
             <div className="flex justify-between items-end px-2">
               <div>
                 <h2 className="text-2xl font-bold text-sky-900">Entrada</h2>
-                <p className="text-sky-600 text-sm">Insira o texto que deseja aprimorar</p>
+                <p className="text-sky-600 text-sm">Cole seu texto aqui</p>
               </div>
               <motion.button 
                 whileHover={{ scale: 1.05 }}
@@ -70,24 +70,23 @@ const App: React.FC = () => {
                 onClick={handleClear}
                 className="bg-white/50 hover:bg-white px-4 py-2 rounded-xl text-sky-700 text-sm font-medium transition-colors border border-sky-100"
               >
-                Resetar
+                Limpar
               </motion.button>
             </div>
 
             <motion.div 
-              whileFocus={{ scale: 1.01 }}
               className="relative rounded-[2rem] overflow-hidden glass shadow-2xl transition-all border-white/60"
             >
               <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Escreva algo brilhante aqui..."
+                placeholder="Ex: O céu está muito bonito hoje e as pessoas parecem felizes..."
                 className="w-full h-[450px] p-8 bg-transparent focus:outline-none text-sky-950 text-lg leading-relaxed placeholder-sky-300 resize-none"
               />
               <div className="absolute bottom-6 left-8 flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
                 <span className="text-xs font-bold text-sky-400 uppercase tracking-widest">
-                  {inputText.split(/\s+/).filter(Boolean).length} palavras
+                  {inputText.trim() ? inputText.split(/\s+/).length : 0} palavras
                 </span>
               </div>
             </motion.div>
@@ -100,19 +99,19 @@ const App: React.FC = () => {
               className={`relative group w-full py-5 rounded-2xl font-black text-xl overflow-hidden transition-all ${
                 status === AppStatus.LOADING 
                   ? 'bg-sky-200 cursor-not-allowed text-sky-400' 
-                  : 'bg-blue-600 text-white'
+                  : 'bg-blue-600 text-white shadow-xl shadow-blue-200'
               }`}
             >
               <div className="relative z-10 flex items-center justify-center gap-3">
                 {status === AppStatus.LOADING ? (
                   <>
-                    <i className="fas fa-compact-disc fa-spin"></i>
-                    IA Analisando...
+                    <div className="w-5 h-5 border-2 border-sky-400 border-t-white rounded-full animate-spin" />
+                    Aprimorando...
                   </>
                 ) : (
                   <>
                     <i className="fas fa-wand-magic-sparkles"></i>
-                    Transcrever Agora
+                    Enriquecer Texto
                   </>
                 )}
               </div>
@@ -126,11 +125,11 @@ const App: React.FC = () => {
           <div className="flex flex-col gap-6">
             <div className="flex justify-between items-end px-2">
               <div>
-                <h2 className="text-2xl font-bold text-sky-900">Resultado</h2>
-                <p className="text-sky-600 text-sm">Seu texto com vocabulário enriquecido</p>
+                <h2 className="text-2xl font-bold text-sky-900">Transcrição</h2>
+                <p className="text-sky-600 text-sm">Edite livremente se desejar</p>
               </div>
               <AnimatePresence>
-                {status === AppStatus.SUCCESS && (
+                {(status === AppStatus.SUCCESS || outputText) && (
                   <motion.button
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -143,7 +142,7 @@ const App: React.FC = () => {
                     }`}
                   >
                     <i className={`fas ${copySuccess ? 'fa-check' : 'fa-copy'}`}></i>
-                    {copySuccess ? 'Copiado' : 'Copiar Texto'}
+                    {copySuccess ? 'Copiado!' : 'Copiar'}
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -155,24 +154,24 @@ const App: React.FC = () => {
               }`}
             >
               {status === AppStatus.LOADING && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-white/20 backdrop-blur-[2px]">
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-white/40 backdrop-blur-[2px]">
                    <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-                   <p className="font-bold text-blue-600 animate-pulse tracking-widest text-xs uppercase">Processando Linguagem...</p>
+                   <p className="font-bold text-blue-600 animate-pulse tracking-widest text-xs uppercase">Processando Vocabulário...</p>
                 </div>
               )}
               
               <textarea
                 value={outputText}
                 onChange={(e) => setOutputText(e.target.value)}
-                placeholder="A mágica acontecerá aqui..."
+                placeholder="O resultado com sinônimos aparecerá aqui..."
                 className="w-full h-[450px] p-8 bg-transparent focus:outline-none text-blue-900 text-lg leading-relaxed placeholder-blue-300 resize-none"
               />
 
-              <div className="absolute bottom-6 right-8">
-                <div className="flex gap-2">
-                  <div className="h-1.5 w-6 rounded-full bg-blue-100" />
-                  <div className="h-1.5 w-3 rounded-full bg-blue-200" />
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-300" />
+              <div className="absolute bottom-6 right-8 pointer-events-none">
+                <div className="flex gap-2 opacity-50">
+                  <div className="h-1.5 w-6 rounded-full bg-blue-200" />
+                  <div className="h-1.5 w-3 rounded-full bg-blue-300" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-blue-400" />
                 </div>
               </div>
             </motion.div>
@@ -183,9 +182,9 @@ const App: React.FC = () => {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="bg-red-50 p-4 rounded-2xl border border-red-100 flex items-center gap-3 text-red-600 font-medium"
+                  className="bg-red-50 p-4 rounded-2xl border border-red-200 flex items-center gap-3 text-red-600 font-medium"
                 >
-                  <i className="fas fa-circle-exclamation text-xl"></i>
+                  <i className="fas fa-triangle-exclamation text-xl"></i>
                   {errorMessage}
                 </motion.div>
               )}
@@ -194,25 +193,24 @@ const App: React.FC = () => {
             <div className="p-8 rounded-[2rem] glass border-white/60">
               <div className="flex items-center gap-3 mb-3 text-sky-900">
                 <div className="p-2 bg-blue-100 rounded-lg">
-                  <i className="fas fa-lightbulb text-blue-600"></i>
+                  <i className="fas fa-pencil-alt text-blue-600"></i>
                 </div>
-                <h3 className="font-bold">Interação Dinâmica</h3>
+                <h3 className="font-bold">Dica de Redação</h3>
               </div>
               <p className="text-sky-800/70 text-sm leading-relaxed">
-                Este layout foi projetado para ser intuitivo. Sinta-se à vontade para <strong>editar manualmente</strong> o resultado da IA para dar seu toque final antes de copiar.
+                Nossa IA escolhe palavras que elevam o tom do seu texto. Você pode <strong>alterar qualquer trecho</strong> diretamente na caixa acima se preferir um sinônimo diferente.
               </p>
             </div>
           </div>
         </motion.main>
 
         <footer className="mt-24 pt-12 border-t border-sky-200/50 flex flex-col md:flex-row justify-between items-center gap-6 text-sky-500 text-sm font-medium">
-          <p>© {new Date().getFullYear()} Transcrever Online. Criado para mentes criativas.</p>
+          <p>© {new Date().getFullYear()} Transcrever Online. Todos os direitos reservados.</p>
           <div className="flex items-center gap-8">
-            <a href="#" className="hover:text-blue-600 transition-colors">Instagram</a>
-            <a href="#" className="hover:text-blue-600 transition-colors">LinkedIn</a>
-            <a href="#" className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-              Feedback
-            </a>
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+              Servidor Ativo
+            </span>
           </div>
         </footer>
       </div>
